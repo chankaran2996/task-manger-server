@@ -6,7 +6,8 @@ import router from "./router/route.js";
 import session from "express-session";
 import passport from "passport";
 import "./passport.js"; // Import passport configuration
-import authRoutes from "./routes/auth.js";
+import authRoutes from "./router/auth.js";
+// import authRoutes from "./routes/auth.js";
 
 const app = express();
 app.use(express.json());

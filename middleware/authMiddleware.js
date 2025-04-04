@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/UserModel.js';
 
-
+// verfing token 
 const protect = async (req, res, next) => {
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -18,4 +18,13 @@ const protect = async (req, res, next) => {
   }
 };
 
-export { protect };
+// Middleware for admin to check admin user or not
+const adminOnly = (req, res, next) => {
+  if(req.user && req.user.role ==="admin"){
+    next();
+  }else{
+    res.status(403).josn({message:"Access denied only for admin user only"})
+  }
+}
+
+export { protect, adminOnly };

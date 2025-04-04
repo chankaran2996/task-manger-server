@@ -5,6 +5,8 @@ const userSchema = mongoose.Schema({
   username: { type: String },
   email: { type: String, unique: true },
   password: { type: String},
+  profileImgUrl: {type: String, default:null},
+  role:{type:String, enum:["admin","member"], default:"member"},
   resetToken: { type: String },
   resetTokenExpiry: { type: Date },
 }, { timestamps: true });

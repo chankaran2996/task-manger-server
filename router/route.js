@@ -1,10 +1,11 @@
 import express from "express";
-import { forgotPassword, loginUser, registerUser, resetPassword } from "../controler/userContoler.js";
+import { forgotPassword, getUserProfile, loginUser, registerUser, resetPassword, updateUserProfile } from "../controler/userContoler.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // GET metods
-
+router.get('/profile',protect,getUserProfile);
 
 
 // POST methods
@@ -22,6 +23,8 @@ router.post('/forgot-password', forgotPassword);
 // PUT methods
 // resting password
 router.put('/reset-password/:token', resetPassword);
+
+router.put('/profile', protect, updateUserProfile)
 // DELETE methods
 
 
