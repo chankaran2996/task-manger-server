@@ -7,6 +7,8 @@ import session from "express-session";
 import passport from "passport";
 import "./passport.js"; // Import passport configuration
 import authRoutes from "./router/auth.js";
+import userMangementRoute from "./router/userManagementRoute.js";
+import { protect } from "./middleware/authMiddleware.js";
 // import authRoutes from "./routes/auth.js";
 
 const app = express();
@@ -23,7 +25,9 @@ app.use(passport.session());
 
 app.use("/auth", authRoutes); // Authentication routes
 
-app.use("/api",router)
+app.use("/api",router);
+
+app.use("/api/user", protect ,userMangementRoute);
 
 // connnection
 const startserver = async () => {

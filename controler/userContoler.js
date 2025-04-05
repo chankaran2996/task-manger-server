@@ -33,7 +33,7 @@ export const registerUser = async (req, res) => {
     } else {
       res.status(400).json({ message: 'Invalid user data' });
     }
-  }catch{
+  }catch(error){
     res.status(500).josn({message:'Serever error',error:error.message});
   }
 };
@@ -56,7 +56,7 @@ export const loginUser = async (req, res) => {
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
     }
-  }catch{
+  }catch(error){
     res.status(500).josn({message:'Serever error',error:error.message});
   }
 };
@@ -88,7 +88,7 @@ export const forgotPassword = async (req, res) => {
       }
       res.status(200).json({ message: 'Password reset email sent' });
     });
-  }catch{
+  }catch(error){
     res.status(500).josn({message:'Serever error',error:error.message});
   }
 };
@@ -114,7 +114,7 @@ export const resetPassword = async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: 'Password reset successful' });
-  }catch{
+  }catch(error){
     res.status(500).josn({message:'Serever error',error:error.message});
   }
 };
@@ -129,11 +129,12 @@ export const getUserProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     res.json(user)
-  }catch{
+  }catch(error){
     res.status(500).josn({message:'Serever error',error:error.message});
   }
 }
 
+// updating user detials
 export const updateUserProfile = async (req, res) => {
   try{
     const user = await User.findById(req.user._id);
@@ -156,7 +157,7 @@ export const updateUserProfile = async (req, res) => {
       token: generateToken(user._id),
     });
 
-  }catch{
+  }catch(error){
     res.status(500).josn({message:'Serever error',error:error.message});
   }
 }
