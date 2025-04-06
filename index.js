@@ -9,6 +9,7 @@ import "./passport.js"; // Import passport configuration
 import authRoutes from "./router/auth.js";
 import userMangementRoute from "./router/userManagementRoute.js";
 import { protect } from "./middleware/authMiddleware.js";
+import taskRouter from "./router/taskRoutes.js";
 // import authRoutes from "./routes/auth.js";
 
 const app = express();
@@ -28,6 +29,8 @@ app.use("/auth", authRoutes); // Authentication routes
 app.use("/api",router);
 
 app.use("/api/user", protect ,userMangementRoute);
+
+app.use("/api/task", protect ,taskRouter);
 
 // connnection
 const startserver = async () => {
