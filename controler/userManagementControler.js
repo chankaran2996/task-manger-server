@@ -10,12 +10,13 @@ export const getUser = async (req, res) => {
       const pendingTasks = await Task.countDocuments({ assignedTo: item._id, status: "pending" });
       const inProgressTasks = await Task.countDocuments({ assignedTo: item._id, status: "In progress" });
       const completedTasks = await Task.countDocuments({ assignedTo: item._id, status: "completed" });
-
+      const createdTask = await Task.countDocuments({assignedTo: item._id, status:"created"})
       return {
         ...item._doc,
         pendingTasks,
         inProgressTasks,
-        completedTasks
+        completedTasks,
+        createdTask
       };
     }));
 
