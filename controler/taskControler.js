@@ -203,26 +203,232 @@ export const updateTaskStatus = async(req, res) => {
     }
 }
 
+// updating task checklist by ID
 export const updateTaskCheckList = async(req, res) => {
     try {
-        
+        const { todoCheckList } = req.body;
+
+        const task = await Task.findById(req.params.id);
+
+        if(!task){
+            return res.status(404).json({message:"Task not found"})
+        }
+
+        if(!task.assignedTo.includes(req.user._id) && req.user.role !== "admin"){
+            return res.status(403).json({message:"You are not authorized to update this task"})
+        }
+
+        task.todoCheckList = todoCheckList || task.todoCheckList;
+
+        const completedCount = task.todoCheckList.filter(
+            (item) => item.completed
+        ).length;
+
+        task.progress = Math.round((completedCount / task.todoCheckList.length) * 100);
+
+        if(task.progress === 100){
+            task.status = "complected";
+            task.todoCheckList.forEach((item) => {
+                item.completed = true;
+            });
+        }else if(task.progress > 0){
+            task.status = "In progress";
+        }else{
+            task.status = "created";
+        }
+
+        await task.save();
+
+        const updatedTask = await Task.findById(req.params.id).populate(
+            "assignedTo", 
+            "name email profileImgUrl"
+        );
+
+        res.status(200).json({message:"Task checklist updated successfully", task: updatedTask});
     } catch (error) {
-        res.status(500).josn({ message: 'Serever error', error: error.message });
+        res.status(500).json({ message: 'Serever error', error: error.message });
     }
 }
 
+// getting dashboard data
 export const getDashBoardData = async(req, res) => {
     try {
-        
+        const totalTask = await Task.countDocuments({});
+        const createdTask = await Task.countDocuments({status:"created"});
+        const pendingTask = await Task.countDocuments({status:"pending"});
+        const inProgressTask = await Task.countDocuments({status:"In progress"});
+        const completedTask = await Task.countDocuments({status:"complected"});
+        const overdueTask = await Task.countDocuments(
+            {
+                status:"complected", 
+                dueDate: {$lt: Date.now()}
+            }
+        );
+
+        const taskStatus = ["created", "pending", "In progress", "complected"];
+
+        const taskDistributionRow = await Task.aggregate([
+            {
+                $group: {
+                    _id: "$status",
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const taskDistributionButton = taskStatus.reduce((acc, status) => {
+            const formattedkey = status.replace(/\s+/g, '');
+            acc[formattedkey] = 
+            taskDistributionRow.find(
+                (item) => item._id === status
+            )?.count || 0;
+            return acc;
+        }, {});
+
+        taskDistributionButton["All"] = totalTask;
+        // console.log(taskDistributionButton);
+
+        const taskPriorities = ["Low", "Medium", "High"];
+
+        const taskPriorityRow = await Task.aggregate([
+            {
+                $group: {
+                    _id: "$priority",
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const taskPrioritiesLevel = taskPriorities.reduce((acc, priority) => {
+            
+            acc[priority] = 
+            taskPriorityRow.find(
+                (item) => item._id === priority
+            )?.count || 0;
+            return acc;
+        }, {});
+
+        const recentTasks = await Task.find({})
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .select(
+            "tittle status priority dueDate createdAt"
+        );
+
+        res.status(200).json({
+            message: "Dashboard data fetched successfully",
+            statistics: {
+                totalTask,
+                createdTask,
+                pendingTask,
+                inProgressTask,
+                completedTask,
+                overdueTask
+            },
+            charts: {
+                taskDistributionButton,
+                taskPrioritiesLevel
+            },
+            recentTasks
+        });
+
     } catch (error) {
-        res.status(500).josn({ message: 'Serever error', error: error.message });
+        res.status(500).json({ message: 'Serever error', error: error.message });
     }
 }
 
+// getting user dashboard data
 export const getUserDashBoardData = async(req, res) => {
     try {
-        
+        const userId = req.user._id;
+
+        const totalTask = await Task.countDocuments({ assignedTo: userId });
+        const createdTask = await Task.countDocuments({ assignedTo: userId, status:"created"});
+        const pendingTask = await Task.countDocuments({ assignedTo: userId, status:"pending"});
+        const inProgressTask = await Task.countDocuments({ assignedTo: userId, status:"In progress"});
+        const completedTask = await Task.countDocuments({ assignedTo: userId, status:"complected"});
+        const overdueTask = await Task.countDocuments(
+            {
+                assignedTo: userId,
+                status:"complected", 
+                dueDate: {$lt: Date.now()}
+            }
+        );
+
+        const taskStatus = ["created", "pending", "In progress", "complected"];
+
+        const taskDistributionRow = await Task.aggregate([
+            {
+                $match: { assignedTo: userId },
+            },
+            {
+                $group: {
+                    _id: "$status",
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const taskDistributionButton = taskStatus.reduce((acc, status) => {
+            const formattedkey = status.replace(/\s+/g, '');
+            acc[formattedkey] = 
+            taskDistributionRow.find(
+                (item) => item._id === status
+            )?.count || 0;
+            return acc;
+        }, {});
+
+        taskDistributionButton["All"] = totalTask;
+
+        const taskPriorities = ["Low", "Medium", "High"];
+
+        const taskPriorityRow = await Task.aggregate([
+            {
+                $match: { assignedTo: userId },
+            },
+            {
+                $group: {
+                    _id: "$priority",
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const taskPrioritiesLevel = taskPriorities.reduce((acc, priority) => {
+            
+            acc[priority] = 
+            taskPriorityRow.find(
+                (item) => item._id === priority
+            )?.count || 0;
+            return acc;
+        }, {});
+
+        const recentTasks = await Task.find({ assignedTo: userId })
+        .sort({ createdAt: -1 })    
+        .limit(10)
+        .select(
+            "tittle status priority dueDate createdAt"
+        );
+
+        res.status(200).json({
+            message: "Dashboard data fetched successfully",
+            statistics: {
+                totalTask,
+                createdTask,
+                pendingTask,
+                inProgressTask,
+                completedTask,
+                overdueTask
+            },
+            charts: {
+                taskDistributionButton,
+                taskPrioritiesLevel
+            },
+            recentTasks
+        });
+
+
     } catch (error) {
-        res.status(500).josn({ message: 'Serever error', error: error.message });
+        res.status(500).json({ message: 'Serever error', error: error.message });
     }
 }

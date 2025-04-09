@@ -8,8 +8,9 @@ import passport from "passport";
 import "./passport.js"; // Import passport configuration
 import authRoutes from "./router/auth.js";
 import userMangementRoute from "./router/userManagementRoute.js";
-import { protect } from "./middleware/authMiddleware.js";
+import { adminOnly, protect } from "./middleware/authMiddleware.js";
 import taskRouter from "./router/taskRoutes.js";
+import reportRoutes from "./router/reportRoutes.js";
 // import authRoutes from "./routes/auth.js";
 
 const app = express();
@@ -31,6 +32,8 @@ app.use("/api",router);
 app.use("/api/user", protect ,userMangementRoute);
 
 app.use("/api/task", protect ,taskRouter);
+
+app.use("/api/report", protect , adminOnly, reportRoutes);
 
 // connnection
 const startserver = async () => {
