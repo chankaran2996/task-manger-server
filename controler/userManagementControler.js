@@ -1,5 +1,7 @@
+import transporter from "../config/nodemailerAuth.js";
 import Task from "../models/TaskModel.js";
 import User from "../models/UserModel.js";
+import generateToken from "../utils/generateToken.js";
 
 // Get all users with task counts
 export const getUser = async (req, res) => {
@@ -82,5 +84,57 @@ export const deleteUser = async (req, res) => {
     }
     catch (error) {
         res.status(500).josn({ message: 'Serever error', error: error.message });
+    }
+}
+
+
+export const addMember = async (req, res) => {
+    try {
+        const { username, email, profileImgUrl, adminInviteToken} = req.body;
+
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // checking role
+        let role = "member";
+        if(adminInviteToken == process.env.ADMIN_INVITE_TOKEN){
+          role = "admin"
+        }
+
+        const user = new User({ username, email, profileImgUrl,  role });
+        const data =await user.save();
+
+        const token = generateToken(data._id); // Assuming you have a method to generate a token
+        // Send email to the user with the invite link 
+        user.resetToken = token;
+        user.resetTokenExpiry = Date.now() + 3600000;
+
+        
+        await user.save();
+
+        const passwordSetLink = `http://localhost:5173/set-password/${token}`;
+
+        const mailOptions = {
+            // from:"chandrasekaran@guvi.in",
+            to: email,
+            subject: 'Invite to join our platform',
+            text: `You have been invited to join our platform. Please set your password using the following link: ${passwordSetLink}`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+                return res.status(500).json({ message: 'Error sending email', error: error.message });
+            } else {
+                console.log('Email sent:', info.response);
+            }
+        });
+
+        res.status(201).json({ message: 'User added successfully', user });
+    } catch (error) {
+      console.error('Error adding user:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 }

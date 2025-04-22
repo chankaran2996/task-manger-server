@@ -1,6 +1,6 @@
 import express from "express";
 import { adminOnly } from "../middleware/authMiddleware.js";
-import { deleteUser, getUser, getUserById } from "../controler/userManagementControler.js";
+import { addMember, deleteUser, getUser, getUserById } from "../controler/userManagementControler.js";
 
 const userMangementRoute = express.Router();
 
@@ -13,6 +13,7 @@ userMangementRoute.get("/", adminOnly, getUser);
 userMangementRoute.get("/:id", getUserById);
 
 // post method
+userMangementRoute.post("/addMember", adminOnly, addMember)
 
 // put method
 

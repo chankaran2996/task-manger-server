@@ -312,7 +312,7 @@ export const getDashBoardData = async(req, res) => {
         .sort({ createdAt: -1 })
         .limit(10)
         .select(
-            "tittle status priority dueDate createdAt"
+            "title status priority dueDate createdAt"
         );
 
         res.status(200).json({

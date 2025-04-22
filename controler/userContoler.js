@@ -57,7 +57,7 @@ export const loginUser = async (req, res) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   }catch(error){
-    res.status(500).josn({message:'Serever error',error:error.message});
+    res.status(500).json({message:'Serever error',error:error.message});
   }
 };
 
@@ -70,7 +70,7 @@ export const forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    const token = crypto.randomBytes(20).toString('hex');
+    const token = generateToken(user._id, '1h'); // Generate a token valid for 1 hour
     user.resetToken = token;
     user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
     await user.save();

@@ -12,9 +12,14 @@ import { adminOnly, protect } from "./middleware/authMiddleware.js";
 import taskRouter from "./router/taskRoutes.js";
 import reportRoutes from "./router/reportRoutes.js";
 // import authRoutes from "./routes/auth.js";
+import cors from "cors";
+
+
 
 const app = express();
 app.use(express.json());
+
+app.use(cors()); // Enable CORS for all routes
 
 // creating responce for home routs
 app.get("/", (req, res) => {
