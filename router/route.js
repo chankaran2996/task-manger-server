@@ -1,9 +1,10 @@
 import express from "express";
-import { forgotPassword, getUserProfile, loginUser, registerUser, resetPassword, updateUserProfile } from "../controler/userContoler.js";
+import { forgotPassword, getUserProfile, loginUser, registerUser, resetPassword, setPassword, updateUserProfile } from "../controler/userContoler.js";
 import { protect } from "../middleware/authMiddleware.js";
 import cloudinary from "../config/cloudinaryConfig.js";
 import upload from "../config/multerConfig.js";
 import fs from 'fs';
+import { set } from "mongoose";
 
 const router = express.Router();
 
@@ -46,7 +47,9 @@ router.post('/upload-img', upload.single('image'), async (req, res) => {
 router.put('/reset-password/:token', resetPassword);
 
 // Updating profile
-router.put('/profile', protect, updateUserProfile)
+router.put('/profile', protect, updateUserProfile);
+
+router.put('/set-password',protect,setPassword);
 // DELETE methods
 
 export default router;

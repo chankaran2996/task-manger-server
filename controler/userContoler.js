@@ -75,7 +75,7 @@ export const forgotPassword = async (req, res) => {
     user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
+    const resetLink = `http://localhost:5173/reset-password/${token}`;
     const mailOptions = {
       to: user.email,
       subject: 'Password Reset Request',
@@ -157,6 +157,26 @@ export const updateUserProfile = async (req, res) => {
       token: generateToken(user._id),
     });
 
+  }catch(error){
+    res.status(500).josn({message:'Serever error',error:error.message});
+  }
+}
+
+
+// set password
+export const setPassword = async (req, res) => {
+  // console.log(req.body)
+  // console.log(req.user)
+  // console.log(req.user._id)
+  try{
+    const { password } = req.body;
+    const user = await User.findById(req.user._id);
+    if(!user){
+      return res.status(404).json({ message: 'User not found' });
+    }
+    user.password = password;
+    await user.save();
+    res.status(200).json({ message: 'Password updated successfully' });
   }catch(error){
     res.status(500).josn({message:'Serever error',error:error.message});
   }

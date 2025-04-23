@@ -120,7 +120,8 @@ export const addMember = async (req, res) => {
             // from:"chandrasekaran@guvi.in",
             to: email,
             subject: 'Invite to join our platform',
-            text: `You have been invited to join our platform. Please set your password using the following link: ${passwordSetLink}`,
+            // text: `You have been invited to join our platform. Please set your password using the following link: ${passwordSetLink}`,
+            html: `<p>You have been invited to join our platform. Please set your password using the following link:</p><a href="${passwordSetLink}">Set Password</a>`
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
