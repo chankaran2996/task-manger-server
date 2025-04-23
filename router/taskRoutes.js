@@ -27,6 +27,6 @@ taskRouter.post("/",adminOnly,createTask);
 
 // delete methods
 
-taskRouter.delete(":id",adminOnly,deleteTask);
+taskRouter.delete("/:id",adminOnly,deleteTask);
 
 export default taskRouter;
